@@ -46,7 +46,7 @@
 
     # Roles for security and stability on production.
     - { role: geerlingguy.security, when: extra_security_enabled }
-
+#
   tasks:
     - name: Check if Drupal is already set up.
       stat: "path={{ drupal_core_path }}/index.php"
@@ -69,9 +69,6 @@
     - include: tasks/drush-aliases.yml
     - include: tasks/cron.yml
 
-    - stat: path=tasks/misc.yml
-      register: misc_tasks_file
-
     # Add in additional, optional tasks into a misc.yml file
     - include: tasks/misc.yml
-      when: misc_tasks_file.stat.exists == True and misc_tasks
+      when: misc_tasks
