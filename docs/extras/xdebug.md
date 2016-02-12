@@ -22,3 +22,11 @@ To use XDebug with Sublime Text, change the `php_xdebug_idekey` variable as show
 ```yaml
 php_xdebug_idekey: sublime.xdebug
 ```
+
+## NetBeans and XDebug with Drupal VM
+
+To use XDebug with NetBeans, change the `php_xdebug_idekey` variable as shown below in `config.yml`, and then run `vagrant provision` to reconfigure the VM.
+
+```yaml
+php_xdebug_idekey: netbeans-xdebug
+```
