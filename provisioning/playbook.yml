@@ -36,6 +36,7 @@
     - { role: geerlingguy.drupal-console, when: 'drupal_major_version > 7 and "drupalconsole" in installed_extras' }
     - { role: geerlingguy.memcached, when: '"memcached" in installed_extras' }
     - { role: geerlingguy.redis, when: '"redis" in installed_extras' }
+    - { role: geerlingguy.php-redis, when: '"redis" in installed_extras' }
     - { role: geerlingguy.php-memcached, when: '"memcached" in installed_extras' }
     - { role: geerlingguy.php-xdebug, when: '"xdebug" in installed_extras' }
     - { role: geerlingguy.php-xhprof, when: '"xhprof" in installed_extras' }
@@ -66,6 +67,18 @@
     - include: tasks/www.yml
     - include: tasks/apparmor.yml
       when: ansible_os_family == 'Debian'
+
+    # This needs to be added before any drush calls or we get a fatal error.
+    # Ideally this would be a change in the php-redis role to work with
+    # php-fpm, but this will have to do for now.
+    - name: Add Redis extension into php.ini
+      lineinfile: dest=/etc/php5/fpm/php.ini line="extension=redis.so"
+      notify: restart php-fpm
+    - name: Add Redis extension into php.ini
+      lineinfile: dest=/etc/php5/cli/php.ini line="extension=redis.so"
+      notify: restart php-fpm
+    - name: Clear Redis cache
+      command: "redis-cli FLUSHALL"
 
     # Build makefile if configured.
     - include: tasks/build-makefile.yml

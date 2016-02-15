@@ -25,6 +25,7 @@
 - src: geerlingguy.php-xhprof
 - src: geerlingguy.pimpmylog
 - src: geerlingguy.postfix
+- src: geerlingguy.php-redis
 - src: geerlingguy.redis
 - src: geerlingguy.repo-remi
 - src: geerlingguy.ruby
