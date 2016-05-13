@@ -3,11 +3,13 @@
 .project/
 .vagrant/
 .bundle/
+*.retry
 vagrant_ansible_inventory_default
 config.yml
 drupal.make.yml
 Vagrantfile.local
 examples/prod/inventory
+examples/prod/bootstrap/vars.yml
 misc.yml
 scripts/
 roles/

@@ -3,6 +3,7 @@
   become: yes
 
   vars_files:
+    - vars/main.yml
     - ../config.yml
 
   pre_tasks:
@@ -10,6 +11,11 @@
       when: ansible_os_family == 'Debian'
     - include: tasks/init-redhat.yml
       when: ansible_os_family == 'RedHat'
+
+    - name: Run configured pre-provision shell scripts.
+      script: "{{ item }}"
+      with_items: "{{ pre_provision_scripts }}"
+      when: pre_provision_scripts is defined
 
     - name: Set the PHP webserver daemon correctly when nginx is in use.
       set_fact:
@@ -40,10 +46,12 @@
     - { role: geerlingguy.php-memcached, when: '"memcached" in installed_extras' }
     - { role: geerlingguy.php-xdebug, when: '"xdebug" in installed_extras' }
     - { role: geerlingguy.php-xhprof, when: '"xhprof" in installed_extras' }
+    - { role: geerlingguy.blackfire, when: '"blackfire" in installed_extras' }
     - { role: geerlingguy.adminer, when: '"adminer" in installed_extras' }
     - { role: geerlingguy.pimpmylog, when: '"pimpmylog" in installed_extras' }
     - { role: geerlingguy.daemonize, when: '"mailhog" in installed_extras' }
     - { role: geerlingguy.mailhog, when: '"mailhog" in installed_extras' }
+    - { role: franklinkim.newrelic, when: '"newrelic" in installed_extras' }
     - { role: geerlingguy.nodejs, when: '"nodejs" in installed_extras' }
     - { role: geerlingguy.redis, when: '"redis" in installed_extras' }
     - { role: geerlingguy.php-redis, when: '"redis" in installed_extras' }
@@ -91,9 +99,12 @@
     - include: tasks/drush-aliases.yml
     - include: tasks/cron.yml
 
+    - include: tasks/dashboard.yml
+      when: dashboard_install_dir is defined and dashboard_install_dir != ''
+
     - name: Run configured post-provision shell scripts.
       script: "{{ item }}"
-      with_items: post_provision_scripts
+      with_items: "{{ post_provision_scripts }}"
       when: post_provision_scripts is defined
 
     # Add in additional, optional tasks into a misc.yml file

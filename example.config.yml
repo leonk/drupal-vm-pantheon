@@ -1,6 +1,6 @@
 ---
 # `vagrant_box` can also be set to geerlingguy/centos6, geerlingguy/centos7,
-# geerlingguy/ubuntu1204, parallels/ubuntu-14.04, etc.
+# geerlingguy/ubuntu1604, geerlingguy/ubuntu1204, parallels/ubuntu-14.04, etc.
 vagrant_box: geerlingguy/ubuntu1404
 vagrant_user: vagrant
 vagrant_synced_folder_default_type: nfs
@@ -97,6 +97,10 @@ apache_vhosts:
     extra_parameters: |
           ProxyPassMatch ^/(.*\.php(/.*)?)$ "fcgi://127.0.0.1:9000{{ pimpmylog_install_dir }}"
 
+  - servername: "{{ vagrant_ip }}"
+    serveralias: "dashboard.{{ vagrant_hostname }}"
+    documentroot: "{{ dashboard_install_dir }}"
+
 apache_remove_default_vhost: true
 apache_mods_enabled:
   - expires.load
@@ -125,7 +129,11 @@ nginx_hosts:
     root: "{{ pimpmylog_install_dir }}"
     is_php: true
 
+  - server_name: "{{ vagrant_ip }} dashboard.{{ vagrant_hostname }}"
+    root: "{{ dashboard_install_dir }}"
+
 nginx_remove_default_vhost: true
+nginx_ppa_use: true
 
 # MySQL Databases and users. If build_makefile: is true, first database will
 # be used for the makefile-built site.
@@ -144,9 +152,11 @@ mysql_users:
 # to install *any* extras, make set this value to an empty set, e.g. `[]`.
 installed_extras:
   - adminer
+  # - blackfire
   - drupalconsole
   - mailhog
   - memcached
+  # - newrelic
   # - redis
   # - nodejs
   - pimpmylog
@@ -160,15 +170,16 @@ installed_extras:
   # - pantheon-cli
 
 # Add any extra apt or yum packages you would like installed.
-extra_packages:
-  - unzip
+extra_packages: []
 
-# `nodejs` must be in installed_extras for this to work.
+# `nodejs` must be in installed_extras for this to work. Valid examples: "0.10",
+# "0.12", "4.x", "5.x".
 nodejs_version: "0.12"
 nodejs_npm_global_packages: []
+nodejs_install_npm_user: "{{ drupalvm_user }}"
 
 # `ruby` must be in installed_extras for this to work.
-ruby_install_gems_user: "{{ vagrant_user }}"
+ruby_install_gems_user: "{{ drupalvm_user }}"
 ruby_install_gems: []
 
 # You can configure almost anything else on the server in the rest of this file.
@@ -192,6 +203,8 @@ firewall_allowed_tcp_ports:
 firewall_log_dropped_packets: false
 
 # PHP Configuration. Currently-supported versions: 5.5, 5.6, 7.0.
+# PHP 7.0 requires a few additional changes. See the documentation at
+# http://docs.drupalvm.com/en/latest/other/php-7/
 php_version: "5.6"
 php_memory_limit: "192M"
 php_display_errors: "On"
@@ -210,12 +223,15 @@ php_enable_php_fpm: true
 php_fpm_listen: "127.0.0.1:9000"
 
 composer_path: /usr/bin/composer
-composer_home_path: '/home/vagrant/.composer'
+composer_home_path: "/home/{{ drupalvm_user }}/.composer"
+composer_home_owner: "{{ drupalvm_user }}"
+composer_home_group: "{{ drupalvm_user }}"
 # composer_global_packages:
 #   - { name: phpunit/phpunit, release: '@stable' }
 
-# Run specified scripts after VM is provisioned. Path is relative to the
-# `provisioning/playbook.yml` file.
+# Run specified scripts before or after VM is provisioned. Path is relative to
+# the `provisioning/playbook.yml` file.
+pre_provision_scripts: []
 post_provision_scripts: []
   # - "../examples/scripts/configure-solr.sh"
 
@@ -255,4 +271,5 @@ solr_xmx: "128M"
 selenium_version: 2.46.0
 
 # Other configuration.
+dashboard_install_dir: /var/www/dashboard
 known_hosts_path: ~/.ssh/known_hosts
